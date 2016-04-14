@@ -177,6 +177,8 @@ app.get("/redirect-fail.html", (req, res) => {
     `);
 });
 
+app.use(express.static(`${__dirname}/static`));
+
 function nplusone(req, res) {
     let n = req.cookies["n"];
     res.cookie("n", String(isNaN(n) ? 1 : +n + 1), {

@@ -42,7 +42,7 @@ app.use(cookieParser());
 
 morgan.token("nn", (req) => req.cookies["n"]);
 app.use(morgan(
-    ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" n=:nn xff=":req[x-forwarded-for]"'
+    ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" n=:nn xff=":req[x-forwarded-for]" host=":req[host]"'
 ));
 
 app.get("/", endpoint("cookie test", dimsum));

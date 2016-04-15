@@ -11,24 +11,20 @@ let tld             = require("tldjs");
 let hipsum = fs.readFileSync(`${__dirname}/hipsum.html-fragment`, "utf8");
 let dimsum = fs.readFileSync(`${__dirname}/dimsum.html-fragment`, "utf8");
 let nmhtml = (req) => `
-        <div style="color: #666; font-size: 0.8em">
-            <div>Server saw n=${req.cookies["n"]}, m1=${req.cookies["m1"]}, m2=${req.cookies["m2"]}.</div>
-            <div>Did JavaScript run here? <span id="js">No.</span> <noscript>(I'm in a noscript tag!)</noscript></div>
-            <div>How's n look from here? <span id="n">Dunno.</span></div>
-            <div>How's m1 look from here? <span id="m1">Dunno.</span></div>
-            <div>How's m2 look from here? <span id="m2">Dunno.</span></div>
-        </div>
+        Server saw that n was ${JSON.stringify(req.cookies["n"])},
+        m1 was ${JSON.stringify(req.cookies["m1"])}, and
+        m2 was ${JSON.stringify(req.cookies["m2"])}.
+        <span id="js">JS hasn't run on client.</span>
+        <noscript>(I'm in noscript!)</noscript>
 
         <script>
             (function () {
-                var js = document.getElementById("js"),
-                    n = document.getElementById("n"),
-                    m1 = document.getElementById("m1"),
-                    m2 = document.getElementById("m2");
-                js.innerHTML = "Yes!"
-                n.innerHTML = "" + (window.document.cookie.match(/(^|;) *n=([^;]*)/) || [])[2];
-                m1.innerHTML = "" + (window.document.cookie.match(/(^|;) *m1=([^;]*)/) || [])[2];
-                m2.innerHTML = "" + (window.document.cookie.match(/(^|;) *m2=([^;]*)/) || [])[2];
+                var js = document.getElementById("js");
+                var n = (window.document.cookie.match(/(^|;) *n=([^;]*)/) || [])[2];
+                var m1 = (window.document.cookie.match(/(^|;) *m1=([^;]*)/) || [])[2];
+                var m2 = (window.document.cookie.match(/(^|;) *m2=([^;]*)/) || [])[2];
+                js.innerHTML = "JS on client sees that n is " + JSON.stringify(n) +
+                    ", m1 is " + JSON.stringify(m1) + ", and m2 is " + JSON.stringify(m2) + ".";
             })();
         </script>
     `;
@@ -62,6 +58,10 @@ app.get("/yank.html", (req, res) => {
             <head>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:site" content="@tarobomb" />
+                <meta name="twitter:title" content="yank test" />
+                <meta name="twitter:description" content="This is yank on ${req.hostname}." />
                 <title>yank test</title>
                 <script>
                     (function () {
@@ -76,9 +76,8 @@ app.get("/yank.html", (req, res) => {
                 </script>
             </head>
             <body>
-                <p>This is the yank page on ${req.hostname}.</p>
+                <p>This is yank on ${req.hostname}. ${nmhtml(req)}</p>
                 ${lips("yank")}
-                ${nmhtml(req)}
             </body>
         </html>
     `);
@@ -93,12 +92,15 @@ app.get("/yank-m1-exists.html", (req, res) => {
             <head>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:site" content="@tarobomb" />
+                <meta name="twitter:title" content="yank success" />
+                <meta name="twitter:description" content="Welcome to ${req.hostname}. JS ran on yank and cookie exists!" />
                 <title>yank success</title>
             </head>
             <body>
-                <p>JavaScript ran on ${req.hostname} yank and cookie exists!</p>
+                <p>Welcome to ${req.hostname}. JS ran on yank and cookie exists! ${nmhtml(req)}</p>
                 ${lips("yank-success")}
-                ${nmhtml(req)}
             </body>
         </html>
     `);
@@ -113,12 +115,15 @@ app.get("/yank-cookie-error.html", (req, res) => {
             <head>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:site" content="@tarobomb" />
+                <meta name="twitter:title" content="yank cookie error" />
+                <meta name="twitter:description" content="Welcome to ${req.hostname}. JS ran on yank, but cookie did not exist!" />
                 <title>yank cookie error</title>
             </head>
             <body>
-                <p>JavaScript ran on ${req.hostname} yank, but cookie did not exist!</p>
+                <p>Welcome to ${req.hostname}. JS ran on yank, but cookie did not exist! ${nmhtml(req)}</p>
                 ${lips("yank-fail")}
-                ${nmhtml(req)}
             </body>
         </html>
     `);
@@ -144,12 +149,15 @@ app.get("/redirect-verify.html", (req, res) => {
                 <head>
                     <meta charset="utf-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1">
+                    <meta name="twitter:card" content="summary" />
+                    <meta name="twitter:site" content="@tarobomb" />
+                    <meta name="twitter:title" content="redirect success" />
+                    <meta name="twitter:description" content="Welcome to ${req.hostname}. Cookie exists on redirect-verify!" />
                     <title>redirect success</title>
                 </head>
                 <body>
-                    <p>Cookie exists on ${req.hostname} redirect-verify!</p>
+                    <p>Welcome to ${req.hostname}. Cookie exists on redirect-verify! ${nmhtml(req)}</p>
                     ${lips("redirect-ok")}
-                    ${nmhtml(req)}
                 </body>
             </html>
         `);
@@ -167,12 +175,15 @@ app.get("/redirect-fail.html", (req, res) => {
             <head>
                 <meta charset="utf-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1">
+                <meta name="twitter:card" content="summary" />
+                <meta name="twitter:site" content="@tarobomb" />
+                <meta name="twitter:title" content="redirect cookie error" />
+                <meta name="twitter:description" content="Welcome to ${req.hostname}. Cookie did not exist on redirect-verify!" />
                 <title>redirect cookie error</title>
             </head>
             <body>
-                <p>Cookie did not exist on ${req.hostname} redirect-verify!</p>
+                <p>Welcome to ${req.hostname}. Cookie did not exist on redirect-verify! ${nmhtml(req)}</p>
                 ${lips("redirect-fail")}
-                ${nmhtml(req)}
             </body>
         </html>
     `);
@@ -199,19 +210,22 @@ function endpoint(title, html) {
                 <head>
                     <meta charset="utf-8">
                     <meta name="viewport" content="width=device-width, initial-scale=1">
+                    <meta name="twitter:card" content="summary" />
+                    <meta name="twitter:site" content="@tarobomb" />
+                    <meta name="twitter:title" content="${title}" />
+                    <meta name="twitter:description" content="Welcome to ${req.hostname}!" />
                     <title>${title}</title>
                 </head>
                 <body>
-                    <p>Welcome to ${req.hostname}!</p>
+                    <p>Welcome to ${req.hostname}! ${nmhtml(req)}</p>
                     ${html}
-                    ${nmhtml(req)}
                 </body>
             </html>
         `);
     };
 };
 
-function lips(seed) {
+function lips(seed, nParas) {
     return loremIpsum({
         count: 5, units: "paragraphs", format: "html",
         paragraphLowerBound: 1, paragraphUpperBound: 5,

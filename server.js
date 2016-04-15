@@ -6,6 +6,7 @@ let fs              = require("fs");
 let morgan          = require("morgan");
 let seedrandom      = require("seedrandom");
 let loremIpsum      = require("lorem-ipsum");
+let tld             = require("tldjs");
 
 let hipsum = fs.readFileSync(`${__dirname}/hipsum.html-fragment`, "utf8");
 let dimsum = fs.readFileSync(`${__dirname}/dimsum.html-fragment`, "utf8");
@@ -50,7 +51,7 @@ app.get("/hipsum.html", endpoint("hipsum", hipsum));
 app.get("/yank.html", (req, res) => {
     nplusone(req, res);
     res.cookie("m1", "z1-rkvfgf", {
-        domain: ".wru.io",
+        domain: tld.getPublicSuffix(req.hostname) ? "." + tld.getDomain(req.hostname) : undefined,
         path: "/",
         expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
     });
@@ -75,7 +76,7 @@ app.get("/yank.html", (req, res) => {
                 </script>
             </head>
             <body>
-                <p>This is the yank page.</p>
+                <p>This is the yank page on ${req.hostname}.</p>
                 ${lips("yank")}
                 ${nmhtml(req)}
             </body>
@@ -95,7 +96,7 @@ app.get("/yank-m1-exists.html", (req, res) => {
                 <title>yank success</title>
             </head>
             <body>
-                <p>JavaScript ran and cookie exists on yank!</p>
+                <p>JavaScript ran on ${req.hostname} yank and cookie exists!</p>
                 ${lips("yank-success")}
                 ${nmhtml(req)}
             </body>
@@ -115,7 +116,7 @@ app.get("/yank-cookie-error.html", (req, res) => {
                 <title>yank cookie error</title>
             </head>
             <body>
-                <p>JavaScript ran on yank, but cookie did not exist!</p>
+                <p>JavaScript ran on ${req.hostname} yank, but cookie did not exist!</p>
                 ${lips("yank-fail")}
                 ${nmhtml(req)}
             </body>
@@ -126,7 +127,7 @@ app.get("/yank-cookie-error.html", (req, res) => {
 app.get("/redirect.html", (req, res) => {
     nplusone(req, res);
     res.cookie("m2", "hello", {
-        domain: ".wru.io",
+        domain: tld.getPublicSuffix(req.hostname) ? "." + tld.getDomain(req.hostname) : undefined,
         path: "/",
         expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
     });
@@ -146,7 +147,7 @@ app.get("/redirect-verify.html", (req, res) => {
                     <title>redirect success</title>
                 </head>
                 <body>
-                    <p>Cookie exists on redirect-verify!</p>
+                    <p>Cookie exists on ${req.hostname} redirect-verify!</p>
                     ${lips("redirect-ok")}
                     ${nmhtml(req)}
                 </body>
@@ -169,7 +170,7 @@ app.get("/redirect-fail.html", (req, res) => {
                 <title>redirect cookie error</title>
             </head>
             <body>
-                <p>Cookie did not exist on redirect-verify!</p>
+                <p>Cookie did not exist on ${req.hostname} redirect-verify!</p>
                 ${lips("redirect-fail")}
                 ${nmhtml(req)}
             </body>
@@ -182,7 +183,7 @@ app.use(express.static(`${__dirname}/static`));
 function nplusone(req, res) {
     let n = req.cookies["n"];
     res.cookie("n", String(isNaN(n) ? 1 : +n + 1), {
-        domain: ".wru.io",
+        domain: tld.getPublicSuffix(req.hostname) ? "." + tld.getDomain(req.hostname) : undefined,
         path: "/",
         expires: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
     });
@@ -201,6 +202,7 @@ function endpoint(title, html) {
                     <title>${title}</title>
                 </head>
                 <body>
+                    <p>Welcome to ${req.hostname}!</p>
                     ${html}
                     ${nmhtml(req)}
                 </body>
